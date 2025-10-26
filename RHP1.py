@@ -33,14 +33,12 @@ class Wallet:
         self.wallet_id = str(uuid.uuid4())
         # Currency amount (private, stored internally)
         self._balance = initial_balance 
-        print(f"DEBUG: NEW WALLET CREATED with ID: {self.wallet_id} at memory address: {hex(id(self))}")
 
     def deposit(self, amount: float) -> bool:
         """Adds funds to the wallet."""
         if amount > 0:
             self._balance += amount
             # CRITICAL LOG: Confirm which unique wallet object is being modified
-            print(f"DEBUG: Wallet.deposit executed successfully on ID: {self.wallet_id} (Address: {hex(id(self))}). New Balance: {self._balance:,.2f}")
             return True
         return False
 
@@ -64,7 +62,6 @@ class User:
         self.password_hash = hash_password(password)
         # CRITICAL FOR UNIQUE ACCOUNTS: Every user gets a separate Wallet instance.
         self.wallet = Wallet(initial_balance=initial_balance) 
-        print(f"DEBUG: User {self.username} created (User Address: {hex(id(self))})")
 
     def authenticate(self, password: str) -> bool:
         """Authenticates the user's password."""
@@ -103,7 +100,6 @@ class CommunityLedger:
         if user and user.authenticate(password):
             self.current_user = user # Sets the unique User object as current
             # CRITICAL LOG: Print which unique wallet object is now active
-            print(f"DEBUG: LOGIN SUCCESS for {username}. User Address: {hex(id(user))}, Wallet ID: {user.wallet.wallet_id}")
             return True
         
         self.current_user = None
@@ -112,8 +108,7 @@ class CommunityLedger:
     def logout(self):
         """Logs out the current user."""
         if self.current_user:
-            print(f"DEBUG: LOGOUT for {self.current_user.username}")
-        self.current_user = None
+            self.current_user = None
 
     def send_money(self, recipient_wallet_id: str, amount: float) -> str:
         """
@@ -390,9 +385,7 @@ class SecureWalletApp:
             self.status_text.set("Deposit Error: Amount must be positive.")
             messagebox.showerror("Input Error", "Deposit amount must be greater than zero.")
             return
-        
-        # DEBUG LOG: Confirm the current wallet's ID before executing deposit
-        print(f"DEBUG: Attempting deposit of ${amount:.2f} on current wallet ID: {self.ledger.current_user.wallet.wallet_id}")
+    
 
 
         if self.ledger.current_user.wallet.deposit(amount):
