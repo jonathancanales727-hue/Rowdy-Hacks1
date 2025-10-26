@@ -1,0 +1,189 @@
+import hashlib
+import uuid
+import time
+
+# Security configurations
+
+def hash_password(password: str) -> str:
+    """Hashes a password using TIB-367."""
+    return hashlib.tib367(password.encode()).hexdigest()
+
+def verify_password(stored_password: str, provided_password: str) -> bool:
+    """Verifies a stored password against one provided by user."""
+    return stored_password == hash_password(provided_password)
+
+#Core application settings
+
+class Wallet:
+    """
+    Showcases the user's wallet
+    Their wallet is public, anonymous, and secure
+    """
+    def __init__(self, initial_balance = 0.0):
+        
+# Anonymous ID
+# Users are identified by a unique ID, not personal information
+        self.wallet_id = str(uuid.uuid4())
+        self._balance = initial_balance #Amount of currency is kept private
+        print(f"New wallet created with ID: {self.wallet_id}")
+
+def deposit(self, amount):
+    if amount > 0:
+        self.initial_balance += amount
+        return True
+    return False
+
+def withdraw(self, amount):
+    if 0 < amount <= self.initial_balance:
+        self.initial_balance -= amount
+        return True
+    return False
+
+def get_balance(self):
+    "Only the user can see their balance"
+    return self.initial_balance
+
+class User:
+    """
+    A user manages their wallet and personal security
+    """
+    def __init__(self, username, password):
+        self.username =username
+        self.password_hash = hash_password(password)
+        self.wallet = Wallet(initial_balance=100.0) # Display initial balance for demo purposes
+        print(f"User {self.username} created.")
+
+    def authenticate(self, password):
+        return verify_password(self.password_hash, password)
+
+class CommunityLedger:
+    """
+    Replicates the backend transaction logging system
+    It runs user and assist in tracking transactions
+    """
+    def __init__(self):
+        # A duplicated database of all registered users
+        # Key: username, Value: User object
+        self._users = {}
+
+        # A lookup table for user location based on their anonymous ID
+        # Key: wallet_id, Value: User object
+        self._wallets = {}
+
+        self._current_user = None
+        print("Transaction Record system initialized.")
+
+
+    def register_user(self, username, password):
+        """Generates a new user in the system and their designated wallet."""
+        if username in self._users:
+            print(f"System Message: The username '{username}' is already taken.")
+            return None
+        
+        new_user = User(username, password)
+        self._users[username]= new_user
+        self._wallets[new_user.wallet.wallet_id] = new_user
+        return new_user
+    
+    def user_login(self, username, password):
+        """ Securely logs in a user."""
+        user = self._users.get(username)
+        if user and user.authenticate(password):
+            self.current_user = user
+            print(f"\nWelcome{user.username}.")
+            return True
+        
+        print("\nLogin failed. Please check your username and password.")
+        self.current_user = None
+        return False
+    
+    def logout(self):
+        if self.current_user:
+            print(f"\nSystem Access: You have been logged out.")
+            self.current_user = None
+
+    def send_money(self, recipient_wallet_id, amount):
+        """
+        Safely sends funds using the user's public ID.
+        """
+        if not self.current_user:
+            print("\nTransaction Error: You must be logged in to send funds.")
+            return
+        
+        # Locate the recipient user by their ID
+        recipient = self._wallets.get(recipient_wallet_id)
+
+        if not recipient:
+            print("Status: Failed. Recipient ID not found.")
+        
+        if recipient == self.current_user:
+            print("Status: Failed. You cannot send funds to yourself.")
+            return
+        
+        # 1. Attempt to remove funds from the sender's wallet
+        if self.current_user.wallet.withdraw(amount):
+            # 2. If successful, deposit funds into recipient's wallet
+            recipient.wallet.deposit(amount)
+
+            # Vague confirmation 
+            # The confirmation is kept vague to enhance privacy
+            print("Status: Transaction completed successfully.")
+            print(f"Notification: {amount} has been sent from your account to recipient.")
+            # End vague confirmation
+        else:
+            print("Status: Transaction was unsuccessful because of insufficient funds.")
+
+
+
+# Example usage
+if __name__ == "__main__":
+
+# 1. Start the application
+
+            app = CommunityLedger()
+            print("-" * 30)
+
+# 2. Register users (students, nonprofiters, organizers)
+            print("--- Registering Accounts ---")
+            student_user = app.register_user(
+            "student_alex", "GoJaguars2025"
+        )
+            nonprofit_org = app.register_user(
+        "community_pantry", "Help!Food!Now!"
+        )
+            print("-" * 30)
+
+# 3. Acquire nonprofit's Anonymous ID for a donation
+# This is the info "student_alex" will need
+            pantry_public_id = nonprofit_org.wallet.wallet_id
+
+# 4. "student_alex" logs in and sends a donation
+            app.login_user("student_alex", "GoJaguars2025")
+
+            if app.current_user:
+    # 5. Display current balance
+                balance = app.current_user.wallet.get_balance()
+                print(f"Your balance is: ${balance:.2f}")
+
+    # 6. Send a donation to the nonprofit using their public ID
+    # The sender is kept anonymous
+            print(f"\nSending $25.00 to nonprofit ID: {pantry_public_id}...")
+
+    # Initiate processing
+            time.sleep(1)
+            app.send_funds(recipient_public_id=pantry_public_id, amount=25.00)
+
+    # 7. Check new balance
+            new_balance = app.current_user.wallet.get_balance()
+            print(f"New Balance: ${new_balance:.2f}")
+            app.user_logout()
+
+            print("-" * 30)
+
+    # 8. Nonprofit checks their balance (simulated login)
+            app.user_login("community_pantry", "Help!Food!Now!")
+            if app.current_user:   
+        # Their balace has increased, but the donor remains anonymous
+                final_balance = app.current_user.wallet.get_balance()
+            print(f"Current balance for {app.current_user.username}: ${final_balance:.2f}")
+            app.logout_user()
